@@ -48,11 +48,11 @@
     console.log(data.slice(pageStart, pageSize))
     data.slice(pageStart, pageSize).forEach(function(o, i) {
       var html = `<h5>${o.name}&nbsp;&nbsp;<span>${o.size}</span></h5>
-<p><span>${o.tags}</span></p>
-<p>${o.name}</p>
-<p>${o.description}</p>
-<p>${o.url}</p>
-<p>${o.source}</p>`
+                 <p><span>${o.tags}</span></p>
+                 <p>${o.name}</p>
+                 <p>${o.description}</p>
+                 <p>${o.url}</p>
+                 <p>${o.source}</p>`
       el.push(document.createElement('div'))
       el[i].className = 'item'
       el[i].innerHTML = html
@@ -68,7 +68,8 @@
   }
 
   function load(url = 'data.json') {
-    request(url).then(successCallback).then(function() {
+    request(url).then(successCallback)
+    .then(function() {
       //todo
     })
   }
