@@ -42,7 +42,8 @@
   function convertData(slice) {
     var result = []
     slice.forEach(function(o, i) {
-      var html = `<h5>${o.name}&nbsp;&nbsp;<span>${o.size}</span></h5>
+      var html = 
+          `<h5>${o.name}&nbsp;&nbsp;<span>${o.size}</span></h5>
            <p><span>${o.tags}</span></p>
            <p>${o.name}</p>
            <p>${o.description}</p>
