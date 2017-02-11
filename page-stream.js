@@ -1,11 +1,13 @@
 (function() {
   'use strict'
+  
   const content = document.getElementById('content')
   let pageSize = 20
   let delta = pageSize
   let page = 0
   let pageStart = 0
   let timeout = null
+  // bind scroll event
   window.onscroll = scrollHandler
   load()
 
@@ -37,27 +39,30 @@
     })
   }
 
+  function convertData(slice) {
+    var result = []
+    slice.forEach(function(o, i) {
+      var html = `<h5>${o.name}&nbsp;&nbsp;<span>${o.size}</span></h5>
+           <p><span>${o.tags}</span></p>
+           <p>${o.name}</p>
+           <p>${o.description}</p>
+           <p>${o.url}</p>
+           <p>${o.source}</p>`
+      result.push(document.createElement('div'))
+      result[i].className = 'item'
+      result[i].innerHTML = html
+      content.appendChild(result[i])
+    })
+  }
+
   function successCallback(data) {
     var data = JSON.parse(data)
     var size = data.length
     var pageNumber = Math.ceil(size / delta)
     var el = []
-    var loading = document.querySelector('.loading')
     page++
-    if (loading) document.body.removeChild(loading)
-    console.log(data.slice(pageStart, pageSize))
-    data.slice(pageStart, pageSize).forEach(function(o, i) {
-      var html = `<h5>${o.name}&nbsp;&nbsp;<span>${o.size}</span></h5>
-                 <p><span>${o.tags}</span></p>
-                 <p>${o.name}</p>
-                 <p>${o.description}</p>
-                 <p>${o.url}</p>
-                 <p>${o.source}</p>`
-      el.push(document.createElement('div'))
-      el[i].className = 'item'
-      el[i].innerHTML = html
-      content.appendChild(el[i])
-    })
+    removeLoading()
+    convertData(data.slice(pageStart, pageSize))
     if (page % pageNumber) {
       pageStart = pageSize
       pageSize = Math.min(pageSize + delta, size)
@@ -68,10 +73,21 @@
   }
 
   function load(url = 'data.json') {
-    request(url).then(successCallback)
-    .then(function() {
+    request(url).then(successCallback).then(function() {
       //todo
     })
+  }
+
+  function addLoading() {
+    var loading = document.createElement('p')
+    loading.className = 'loading'
+    loading.innerHTML = 'loading...'
+    document.body.appendChild(loading)
+  }
+
+  function removeLoading() {
+    var loading = document.querySelector('.loading')
+    if (loading) document.body.removeChild(loading)
   }
 
   function scrollHandler() {
@@ -79,14 +95,9 @@
     var h = viewHeight()
     var ph = pageHeight()
     if (timeout) clearTimeout(timeout)
-    if (y >= ph - h) {
-      var loading = document.createElement('p')
-      loading.className = 'loading'
-      loading.innerHTML = 'loading...'
-      document.body.appendChild(loading)
-      timeout = setTimeout(function() {
-        load(`data.json?page=${page}`)
-      }, 3e2)
-    }
+    if (y >= ph - h) timeout = setTimeout(function() {
+      addLoading()
+      load(`data.json?page=${page}`)
+    }, 3e2)
   }
 }).call(this)
