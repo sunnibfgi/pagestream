@@ -1,12 +1,12 @@
 (function() {
   'use strict'
-  
   const content = document.getElementById('content')
   let pageSize = 20
   let delta = pageSize
   let page = 0
   let pageStart = 0
   let timeout = null
+  let isAjax = false
   // bind scroll event
   window.onscroll = scrollHandler
   load()
@@ -28,12 +28,16 @@
     return new Promise(function(resolve, reject) {
       var req = new XMLHttpRequest
       req.open('GET', url, true)
+      req.timeout = 5e3
       req.onload = function() {
         if (req.status == 200) resolve(req.response)
         else reject(req.statusText)
       }
+      req.ontimeout = function() {
+        reject()
+      }
       req.onerror = function() {
-        reject(new Error(req.statusText))
+        reject(Error(req.statusText))
       }
       req.send(null)
     })
@@ -42,13 +46,12 @@
   function convertData(slice) {
     var result = []
     slice.forEach(function(o, i) {
-      var html = 
-          `<h5>${o.name}&nbsp;&nbsp;<span>${o.size}</span></h5>
+      var html = `<h5>${o.name}&nbsp;&nbsp;<span>${o.size}</span></h5>
            <p><span>${o.tags}</span></p>
            <p>${o.name}</p>
            <p>${o.description}</p>
            <p>${o.url}</p>
-           <p>${o.source}</p>`
+           <p>${o.source || ''}</p>`
       result.push(document.createElement('div'))
       result[i].className = 'item'
       result[i].innerHTML = html
@@ -64,6 +67,7 @@
     page++
     removeLoading()
     convertData(data.slice(pageStart, pageSize))
+    isAjax = false
     if (page % pageNumber) {
       pageStart = pageSize
       pageSize = Math.min(pageSize + delta, size)
@@ -74,16 +78,18 @@
   }
 
   function load(url = 'data.json') {
-    request(url).then(successCallback).then(function() {
-      //todo
-    })
+    request(url).then(successCallback).catch(failCallback)
+  }
+
+  function failCallback(status) {
+    // 
   }
 
   function addLoading() {
     var loading = document.createElement('p')
     loading.className = 'loading'
     loading.innerHTML = 'loading...'
-    document.body.appendChild(loading)
+    if (!loading.length) document.body.appendChild(loading)
   }
 
   function removeLoading() {
@@ -96,9 +102,13 @@
     var h = viewHeight()
     var ph = pageHeight()
     if (timeout) clearTimeout(timeout)
-    if (y >= ph - h) timeout = setTimeout(function() {
-      addLoading()
-      load(`data.json?page=${page}`)
-    }, 3e2)
+    if (y >= ph - h)
+      if (!isAjax) {
+        timeout = setTimeout(function() {
+          isAjax = true
+          addLoading()
+          load(`data.json?page=${page}`)
+        }, 3e2)
+      }
   }
 }).call(this)
