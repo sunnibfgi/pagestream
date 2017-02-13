@@ -67,7 +67,6 @@
     page++
     removeLoading()
     convertData(data.slice(pageStart, pageSize))
-    isAjax = false
     if (page % pageNumber) {
       pageStart = pageSize
       pageSize = Math.min(pageSize + delta, size)
@@ -75,6 +74,7 @@
       pageStart = 0
       pageSize = delta
     }
+    isAjax = false
   }
 
   function load(url = 'data.json') {
@@ -104,8 +104,8 @@
     if (timeout) clearTimeout(timeout)
     if (y >= ph - h)
       if (!isAjax) {
+        isAjax = true
         timeout = setTimeout(function() {
-          isAjax = true
           addLoading()
           load(`data.json?page=${page}`)
         }, 3e2)
