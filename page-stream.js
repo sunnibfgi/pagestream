@@ -102,13 +102,11 @@
     var h = viewHeight()
     var ph = pageHeight()
     if (timeout) clearTimeout(timeout)
-    if (y >= ph - h)
-      if (!isAjax) {
+    if (y >= ph - h && !isAjax)
+      timeout = setTimeout(function() {
         isAjax = true
-        timeout = setTimeout(function() {
-          addLoading()
-          load(`data.json?page=${page}`)
-        }, 3e2)
-      }
+        addLoading()
+        load(`data.json?page=${page}`)
+      }, 3e2)
   }
 }).call(this)
