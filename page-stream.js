@@ -84,10 +84,8 @@
     isAjax = true
     pages && addLoading()
     request(url)
-        .then(function(data){
-            successCallback(data)
-        })
-        .catch(failCallback)
+      .then(successCallback)
+      .catch(failCallback)
   }
 
   function failCallback(status) {}
