@@ -3,7 +3,7 @@
   const content = document.getElementById('content')
   let pageSize = 20
   let delta = pageSize
-  let page = 0
+  let pages = 0
   let pageStart = 0
   let timeout = null
   let isAjax = false
@@ -44,9 +44,11 @@
   }
 
   function convertData(slice) {
-    var result = []
+    var result = [],
+        frag = document.createDocumentFragment()
     slice.forEach(function(o, i) {
-      var html = `<h5>${o.name}&nbsp;&nbsp;<span>${o.size}</span></h5>
+      var html = 
+          `<h5>${o.name}&nbsp;&nbsp;<span>${o.size}</span></h5>
            <p><span>${o.tags}</span></p>
            <p>${o.name}</p>
            <p>${o.description}</p>
@@ -55,8 +57,9 @@
       result.push(document.createElement('div'))
       result[i].className = 'item'
       result[i].innerHTML = html
-      content.appendChild(result[i])
+      frag.appendChild(result[i])
     })
+    content.appendChild(frag)
   }
 
   function successCallback(data) {
@@ -64,10 +67,10 @@
     var size = data.length
     var pageNumber = Math.ceil(size / delta)
     var el = []
-    page++
+    pages++
     removeLoading()
     convertData(data.slice(pageStart, pageSize))
-    if (page % pageNumber) {
+    if (pages % pageNumber) {
       pageStart = pageSize
       pageSize = Math.min(pageSize + delta, size)
     } else {
@@ -78,12 +81,16 @@
   }
 
   function load(url = 'data.json') {
-    request(url).then(successCallback).catch(failCallback)
+    isAjax = true
+    pages && addLoading()
+    request(url)
+        .then(function(data){
+            successCallback(data)
+        })
+        .catch(failCallback)
   }
 
-  function failCallback(status) {
-    // 
-  }
+  function failCallback(status) {}
 
   function addLoading() {
     var loading = document.createElement('p')
@@ -104,9 +111,8 @@
     if (timeout) clearTimeout(timeout)
     if (y >= ph - h && !isAjax)
       timeout = setTimeout(function() {
-        isAjax = true
-        addLoading()
-        load(`data.json?page=${page}`)
+        load(`data.json?page=${pages}`)
       }, 3e2)
   }
+    
 }).call(this)
